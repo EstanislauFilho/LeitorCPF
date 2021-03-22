@@ -17,13 +17,23 @@ class LeitorCPF():
         self.caminhoDataset = '/home/estanislau/Projetos/LeitorCPF/dataset/*.jpg' # Caminho com as imagens das CNH's
         self.larguraImg = 731 # Largura padrão para redimensionar as imagens
         self.alturaImg = 495 # Altura padrão para redimensionar as imagens
+        self.idioma = 'eng' # Idioma que sera usado para leitura dos caracteres da imagem
+    
     
     def filtros(self, img):
         imgRed = cv2.resize(img, (self.larguraImg, self.alturaImg)) # Redimensionamento da imagem
         imgCinza = cv2.cvtColor(imgRed, cv2.COLOR_BGR2GRAY) # Conversão da imagem para escala de cinza
         imgBlur = cv2.GaussianBlur(imgCinza, (5, 5), 0) # Aplicação do filtro de borramento para eliminar ruídos na imagem
-        imgTresh = cv2.inRange(imgBlur, 112, 220) # Binarização da imagem
+        imgTresh = cv2.inRange(imgBlur, 110, 220) # Binarização da imagem
         return imgTresh
+     
+        
+    '''
+        Função que irá fazer a leitura dos caracteres da imagem
+    '''
+    def leituraOCR(self, img):
+        texto = pytesseract.image_to_string(img, lang=self.idioma) # Leitura dos caracteres da imagem no idioma inglês
+        return texto
     
     def main(self):
         #try:
@@ -31,9 +41,13 @@ class LeitorCPF():
             imagem = cv2.imread(i)   # Leitura da imagem da base dados
               
             imagemBin = self.filtros(imagem)
-            imagemRegiaoCPF = imagemBin[211:251, 370:526]
+            imagemRegiaoCPF = imagemBin[211:251, 370:545]
             
-            print(pytesseract.image_to_string(imagemRegiaoCPF, lang='eng'))
+            CPF = self.leituraOCR(imagemRegiaoCPF)
+            tamanhoTexto = len(CPF)
+            
+            print(CPF)
+            print(tamanhoTexto)
             
             cv2.imshow("Imagem", imagem)
             cv2.imshow("Imagem Bin", imagemBin)
