@@ -41,7 +41,7 @@ class LeitorCPF():
         texto = pytesseract.image_to_string(img, lang=self.idioma) # Leitura dos caracteres da imagem no idioma inglês
         return texto
     
-    # Será implementado uma função que vai se o CPF reconhecido pelo OCR é válido
+    # Será implementado uma função que vai verificar se o CPF reconhecido pelo OCR é válido
     def validaCPF(self, cpf):
         pass
     
@@ -52,33 +52,44 @@ class LeitorCPF():
             for i in sorted(glob.glob(self.caminhoDataset)): 
                 imagem = cv2.imread(i)   # Leitura da imagem da base dados
                   
-                imagemSemRuido = self.filtroEliminaRuido(imagem)
-                imagemBinCPF = self.filtroBinarizaImgMetodo1(imagemSemRuido)
-                imagemRegiaoCPF = imagemBinCPF[211:251, 370:545]
+                imagemSemRuido = self.filtroEliminaRuido(imagem) # Chama função para eliminar ruídos na imagem
+                imagemBin = self.filtroBinarizaImgMetodo1(imagemSemRuido) # Binariza a imagem com um limiar específico
+                imagemRegiaoCPF = imagemBin.copy()[211:251, 370:545] # Define a região de interesse na imagem onde está localizado o CPF
+                imagemRegiaoNome = imagemBin.copy()[121:149, 133:672] # Define a região de interesse na imagem onde está localizado o Nome
                 
-                stringCPF = self.leituraOCR(imagemRegiaoCPF)
-                stringCPF = re.sub('[^0-9]', '', stringCPF)
-                tamanhoTexto = len(stringCPF)
+                stringCPF = self.leituraOCR(imagemRegiaoCPF) # Utiliza o OCR para ler o CPF na região especificada 
+                stringCPF = re.sub('[^0-9]', '', stringCPF) # Retira todos os caracteres indesejáveis. Deixa somente números
+                tamanhoTexto = len(stringCPF) # Obtem o tamanho de caracteres da stringCPF
+                
+                stringNome = self.leituraOCR(imagemRegiaoNome) # Utiliza o OCR para ler o Nome na região especificada 
     
+                # Verifica se o CPF tem 11 caracteres, 
+                # se não tiver refaze a leitura do OCR porém 
+                # utilizando outro limiar de binarização da imagem
                 if tamanhoTexto == 11:
-                    pass
-                else:
-                    imagemBinCPF = self.filtroBinarizaImgMetodo2(imagemSemRuido)
-                    imagemRegiaoCPF = imagemBinCPF[211:251, 370:545]
-                    stringCPF = self.leituraOCR(imagemRegiaoCPF)
-                    stringCPF = re.sub('[^0-9]', '', stringCPF)
-                    tamanhoTexto = len(stringCPF)
+                    self.validaCPF(stringCPF) # Função que irá validar se o CPF lido é válido
                     
-                 
-                #     
-                print(stringCPF)
-                print(tamanhoTexto)
+                else:
+                    imagemBin = self.filtroBinarizaImgMetodo2(imagemSemRuido) # Binariza a imagem com um limiar específico
+                    imagemRegiaoCPF = imagemBin.copy()[211:251, 370:545] # Define a região de interesse na imagem onde está localizado o CPF
+                    
+                    stringCPF = self.leituraOCR(imagemRegiaoCPF) # Utiliza o OCR para ler o CPF na região especificada 
+                    stringCPF = re.sub('[^0-9]', '', stringCPF) # Retira todos os caracteres indesejáveis. Deixa somente números
+                    tamanhoTexto = len(stringCPF) # Obtem o tamanho de caracteres da stringCPF
+                    
+                    self.validaCPF(stringCPF) # Função que irá validar se o CPF lido é válido
+                    
+                    
+                # Impressão das informações    
+                print("Número do CPF: {0}".format(stringCPF))
+                print("Nome no CPF: {0}".format(stringNome))
                 print()
                     
                 
                 cv2.imshow("Imagem", imagem)
-                cv2.imshow("Imagem Bin", imagemBinCPF)
-                cv2.imshow("Imagem Reg", imagemRegiaoCPF)
+                cv2.imshow("Imagem Bin", imagemBin)
+                cv2.imshow("Imagem Regiao CPF", imagemRegiaoCPF)
+                cv2.imshow("Imagem Regiao Nome", imagemRegiaoNome)
                 cv2.waitKey(0)
         except:
             print("Erro no programa principal!")
