@@ -86,11 +86,13 @@ class LeitorCPF():
                 print()
                     
                 
-                cv2.imshow("Imagem", imagem)
-                cv2.imshow("Imagem Bin", imagemBin)
-                cv2.imshow("Imagem Regiao CPF", imagemRegiaoCPF)
-                cv2.imshow("Imagem Regiao Nome", imagemRegiaoNome)
-                cv2.waitKey(0)
+                # Exibir imagens processadas
+                # Pressionar 'Esc' para pular para proxima imagem
+                #cv2.imshow("Imagem", imagem)
+                #cv2.imshow("Imagem Bin", imagemBin)
+                #cv2.imshow("Imagem Regiao CPF", imagemRegiaoCPF)
+                #cv2.imshow("Imagem Regiao Nome", imagemRegiaoNome)
+                #cv2.waitKey(0)
         except:
             print("Erro no programa principal!")
         finally:
