@@ -65,7 +65,7 @@ Para as versões disponíveis, consulte as tags neste repositório.
 
 ## Autor
 
-* **Estanislau de Sena Filho** - *Computer Engineering Student at* [LinkedIn](https://www.linkedin.com/in/estanislau-sena-filho/)
+* **Estanislau de Sena Filho** - *Estudante de Engenharia de Computação* [LinkedIn](https://www.linkedin.com/in/estanislau-sena-filho/)
 
 ## Licença
 
