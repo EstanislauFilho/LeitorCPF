@@ -27,15 +27,10 @@ class LeitorCPF():
         return imgBlur
           
     # Função que irá fazer a binarização da imgem usando o limiar 110/220
-    def filtroBinarizaImgMetodo1(self, img):
-        imgTresh = cv2.inRange(img, 110, 220) # Binarização da imagem
+    def filtroBinarizaImg(self, img, limIni):
+        imgTresh = cv2.inRange(img, limIni, 220) # Binarização da imagem
         return imgTresh
-    
-    # Função que irá fazer a binarização da imgem usando o limiar 120/220
-    def filtroBinarizaImgMetodo2(self, img):
-        imgTresh = cv2.inRange(img, 120, 220) # Binarização da imagem
-        return imgTresh
-            
+                
     # Função que irá fazer a leitura dos caracteres da imagem
     def leituraOCR(self, img):
         texto = pytesseract.image_to_string(img, lang=self.idioma) # Leitura dos caracteres da imagem no idioma inglês
@@ -53,39 +48,35 @@ class LeitorCPF():
                 imagem = cv2.imread(i)   # Leitura da imagem da base dados
                   
                 imagemSemRuido = self.filtroEliminaRuido(imagem) # Chama função para eliminar ruídos na imagem
-                imagemBin = self.filtroBinarizaImgMetodo1(imagemSemRuido) # Binariza a imagem com um limiar específico
-                imagemRegiaoCPF = imagemBin.copy()[211:251, 370:545] # Define a região de interesse na imagem onde está localizado o CPF
-                imagemRegiaoNome = imagemBin.copy()[121:149, 133:672] # Define a região de interesse na imagem onde está localizado o Nome
-                
-                stringCPF = self.leituraOCR(imagemRegiaoCPF) # Utiliza o OCR para ler o CPF na região especificada 
-                stringCPF = re.sub('[^0-9]', '', stringCPF) # Retira todos os caracteres indesejáveis. Deixa somente números
-                tamanhoTexto = len(stringCPF) # Obtem o tamanho de caracteres da stringCPF
-                
-                stringNome = self.leituraOCR(imagemRegiaoNome) # Utiliza o OCR para ler o Nome na região especificada 
-    
-                # Verifica se o CPF tem 11 caracteres, 
-                # se não tiver refaze a leitura do OCR porém 
-                # utilizando outro limiar de binarização da imagem
-                if tamanhoTexto == 11:
-                    self.validaCPF(stringCPF) # Função que irá validar se o CPF lido é válido
-                    
-                else:
-                    imagemBin = self.filtroBinarizaImgMetodo2(imagemSemRuido) # Binariza a imagem com um limiar específico
+                limIni = 110 # Limiar de binarização inicial
+                contExe = 0
+                while(contExe < 5): 
+                    imagemBin = self.filtroBinarizaImg(imagemSemRuido, limIni) # Binariza a imagem com um limiar específico
                     imagemRegiaoCPF = imagemBin.copy()[211:251, 370:545] # Define a região de interesse na imagem onde está localizado o CPF
+                    imagemRegiaoNome = imagemBin.copy()[121:149, 133:672] # Define a região de interesse na imagem onde está localizado o Nome
                     
                     stringCPF = self.leituraOCR(imagemRegiaoCPF) # Utiliza o OCR para ler o CPF na região especificada 
                     stringCPF = re.sub('[^0-9]', '', stringCPF) # Retira todos os caracteres indesejáveis. Deixa somente números
                     tamanhoTexto = len(stringCPF) # Obtem o tamanho de caracteres da stringCPF
+                    stringNome = self.leituraOCR(imagemRegiaoNome) # Utiliza o OCR para ler o Nome na região especificada 
+                        
+                                   
+                    # Verifica se o CPF tem 11 caracteres, 
+                    # se não tiver refaze a leitura do OCR porém 
+                    # utilizando outro limiar de binarização da imagem
+                    if tamanhoTexto == 11:
+                        self.validaCPF(stringCPF) # Função que irá validar se o CPF lido é válido
+                        # Impressão das informações    
+                        print("Número do CPF: {0}".format(stringCPF))
+                        print("Nome na CNH: {0}".format(stringNome))
+                        print()
+                        break
+                    else:
+                        limIni += 2 # Incrementa valor de binarização
+                        
+                    contExe += 1 
                     
-                    self.validaCPF(stringCPF) # Função que irá validar se o CPF lido é válido
                     
-                    
-                # Impressão das informações    
-                print("Número do CPF: {0}".format(stringCPF))
-                print("Nome no CPF: {0}".format(stringNome))
-                print()
-                    
-                
                 # Exibir imagens processadas
                 # Pressionar 'Esc' para pular para proxima imagem
                 #cv2.imshow("Imagem", imagem)
